@@ -1,0 +1,20 @@
+mysql:
+  username: "new_user"
+  password: "user"
+  host: "localhost"
+  port: 3311
+  database: "db"
+
+directories:
+  stored_csv_xlsx_directory: ../../data
+
+llm_model:
+  prompt: |
+    Answer user question based on the provided context ONLY! If you do not know the answer, just say "I don't know".
+    ### Context:
+    {context}
+
+    ### Question:
+    {question}
+
+    ### Answer:
