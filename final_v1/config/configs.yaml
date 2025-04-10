@@ -1,0 +1,29 @@
+model:
+  prompts: 
+    role: |
+      You are an SQL expert. Generate an SQL query that creates a fact table following the star schema model. You are provided with
+      tables' schemas which are your context for the creation of fact table.
+
+    tables: |
+      The schemas of the tables are as follows. {tables}
+
+    operations: |
+      Include fields that compute {operations}
+
+    time_aggregation: |
+      Fact table should also contain the time aggregation. Such aggregation should be made over {date_field} and {time} should be extracted. Generated field for this purpose should be of type DATETIME.
+
+    user_prompt: |
+      Make sure that fact table satisfies the next requirements: {requirements}
+
+    remarks_one_aggregation: |
+      Make sure that the generated fact table contains the primary key. Don't create a unique primary key that wasn't listed in the provided tables' schemas. 
+      The primary key should not be listed as auto increment. Ensure that primary key is {primary_key}.
+      Ensure the fact table is properly structured with foreign keys referencing related tables.
+      Output should contain only the sql query to create a fact table. Don't repeat the question, and don't provide an explanation.
+    
+    remarks_multiple_aggregation: |
+      Make sure that the generated fact table contains the primary key. Don't create a unique primary key that wasn't listed in the provided tables' schemas. 
+      The primary key should not be listed as auto increment. Ensure that the primary key is a composite key ({key})
+      Ensure the fact table is properly structured with foreign keys referencing related tables.
+      Output should contain only the sql query to create a fact table. Don't repeat the question, and don't provide an explanation.
