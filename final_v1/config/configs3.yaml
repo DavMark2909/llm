@@ -29,6 +29,7 @@ model:
       - Ensure that the primary key is: {primary_key}.
       - Foreign keys must reference the related dimension tables appropriately.
       - The output must contain only the SQL query that creates the fact table.
+      - The fact table should not contain any math operations nor alias
       - Do not repeat the prompt or provide any explanations.
 
     remarks_multiple_aggregation: |
@@ -38,20 +39,14 @@ model:
       - Ensure that the primary key is a composite key: ({key}).
       - Foreign keys must reference the related dimension tables appropriately.
       - The output must contain only the SQL query that creates the fact table.
+      - The fact table should not contain any math operations nor alias
       - Do not repeat the prompt or provide any explanations.
 
     checking_prompt: |
       You are an SQL expert.
       Given the user input: {user_prompt}, please identify whether the next generated fact table is correct and contains the required aggregations: {fact_table}.
-      If any time aggregation was generated, check that they are included in the fact table as integer fields.
-      It should be the "create table" query with only the definition of the table schema.
-      If generated table satisfies the generated prompt, then output just "Yes". However, if there is an exception, then please output the list of required changes.
-    
-    fixing_prompt: |
-      Your task is to fix the SQL query for the creation of the fact table.
-      Given that the user has asked: {user_prompt}, and the following feedback:
-      {feedback}.
-      Please fix the next fact table creation: 
-      {fact_table}
-      The output should be the "create table" query that only defines the table's schema.
+      Make sure that if fact table performs any time aggregations, then the dedicated field should be of type INT.
+      Make sure that the the output is only the fact table schema, wihtout any insert, select operations.
+      Feel free to make corections if needed and output the corrected output.
+      If no corrections are needed, please output the the query without modifications.
 
