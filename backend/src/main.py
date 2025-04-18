@@ -41,7 +41,7 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        access_token = create_access_token(identity=email)
+        access_token = create_access_token(identity=name)
         return {"access_token": access_token}, 200
     except IntegrityError:
         db.session.rollback()
@@ -67,7 +67,7 @@ def login():
         
 
         if bcrypt.checkpw(password.encode('utf-8'), user.hash):
-            access_token = create_access_token(identity=email)
+            access_token = create_access_token(identity=user.name)
             return {"access_token": access_token}, 200
         else:
             return 'Invalid Login Info!', 400
