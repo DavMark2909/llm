@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask import jsonify
 import bcrypt
 import os
 from flask_jwt_extended import (
@@ -20,7 +21,7 @@ db.init_app(app)
 app.config['JWT_SECRET_KEY'] = 'research-secret-secret' 
 jwt = JWTManager(app)
 
-@app.route('/register', methods=['POST'])
+@app.route('/auth/register', methods=['POST'])
 def register():
     try:
         email = request.json.get('email', None)
@@ -49,7 +50,7 @@ def register():
         return 'Provide an Email and Password in JSON format in the request body', 400
     
 
-@app.route('/login', methods=['POST'])
+@app.route('/auth/login', methods=['POST'])
 def login():
     try:
         email = request.json.get('email', None)
@@ -73,11 +74,14 @@ def login():
     except AttributeError:
         return 'Provide an Email and Password in JSON format in the request body', 400
     
-@app.route('/test', methods=['GET'])
+@app.route('/auth/check', methods=['GET'])
 @jwt_required()
-def test():
+def check_auth():
     user = get_jwt_identity()
-    return f'Welcome to the protected route {user}!', 200
+    return jsonify({
+        "logged_in": True,
+        "user": user
+    }), 200
 
 if __name__ == '__main__':
     with app.app_context():
