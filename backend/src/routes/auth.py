@@ -36,7 +36,7 @@ def register():
         db.session.commit()
 
         access_token = create_access_token(identity=email)
-        response = jsonify({"name": name})
+        response = jsonify({"name": user.name, "id": user.id})
         set_access_cookies(response, access_token)
         return response
         # return {"access_token": access_token}, 200
@@ -63,7 +63,7 @@ def login():
             return 'User Not Found!', 404
 
         if bcrypt.checkpw(password.encode('utf-8'), user.hash):
-            response = jsonify({"name": user.name})
+            response = jsonify({"name": user.name, "id": user.id})
             access_token = create_access_token(identity=email)
             set_access_cookies(response, access_token)
             # return {"access_token": access_token}, 200

@@ -12,8 +12,10 @@ from flask_jwt_extended import (
 from flask_cors import CORS
 from db import db
 
+
 from routes.auth import auth_bp
 from routes.chat import message_bp
+from socket_handler import socketio
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -30,6 +32,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 
 CORS(app, supports_credentials=True, origins=["http://127.0.0.1:5173"])
+socketio.init_app(app)
 app.register_blueprint(auth_bp)
 app.register_blueprint(message_bp)
 
@@ -47,6 +50,7 @@ def refresh_expiring_jwts(response):
         return response
     except (RuntimeError, KeyError):
         return response
+    
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)
