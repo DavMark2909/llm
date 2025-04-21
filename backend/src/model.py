@@ -21,5 +21,6 @@ class Message(db.Model):
     chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     human = db.Column(db.Boolean, nullable=False)  
+    file = db.Column(db.Boolean, nullable=False)  
 
     chat = db.relationship('Chat', back_populates='messages')

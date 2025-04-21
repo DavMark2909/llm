@@ -6,7 +6,7 @@ from flask_jwt_extended import (
 
 from sqlalchemy.exc import IntegrityError
 
-from model import User, Chat
+from model import User, Chat, Message
 from db import db
 
 message_bp = Blueprint('message', __name__, url_prefix='/message')
@@ -47,11 +47,65 @@ def create_chat():
 
         return jsonify({
             "chat_id": chat.id,
-            "topic": chat.topic
+            "name": chat.topic
         }), 201
     
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+@message_bp.route('/send-file', methods=['POST'])
+@jwt_required()
+def recieve_file():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+    chat_id = request.form.get('chat_id')
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    # file_path = f"./uploads/{file.filename}"
+    # file.save(file_path)
+
+    save_message(chat_id=chat_id, content=file.filename, file=True)
+
+    return jsonify({
+        'content': file.filename,
+        'file' : True,
+        'human' : True,
+    }), 200
+
+
+@message_bp.route('/send/<int:chat_id>', methods=['POST'])
+@jwt_required()
+def receive_message(chat_id):
+    data = request.get_json()
+    content = data.get('content')
+
+    if not content:
+        return jsonify({'message': 'Message content is required!'}), 400
+
+    save_message(chat_id=chat_id, content=content)
+
+    return jsonify({
+        'content': content,
+        'file' : False,
+        'human' : True,
+    }), 200
+
+def save_message(chat_id, content, file=False, human=True):
+    new_message = Message(
+        chat_id=chat_id,
+        content=content,
+        human=human,
+        file=file
+    )
+
+    db.session.add(new_message)
+    db.session.commit()
+
+
 
 
