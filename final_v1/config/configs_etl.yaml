@@ -10,7 +10,7 @@ etl:
   role: |
     You are an SQL expert. Your task is to create an SQL query that extracts and aggregates data from a given set of SQL tables, and inserts the result into a target fact table.
 
-    You are working in the context of the {sql_context}.
+    You are working in the syntax of the {sql_context}.
 
     Here are the source tables:
     {tables_schema}
