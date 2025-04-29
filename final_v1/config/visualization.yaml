@@ -1,0 +1,17 @@
+prompts:
+  decision: |
+    Based on the user question: {user_question} and the received answer: {answer}, please decide whether the human-like text of a bar chart should be generated.
+    If you think human-like text should be used, then output: text. Otherwize: chart.
+    Don't output anything else besides "text" or "chart".
+  
+  text: |
+    Please generate the human-like response to the user question: {user_question} if the answer from database is {answer}.
+
+  chart: |
+    Having the user question: {user_question} and the received answer from the database: {answer}, please help extracting the values for the creation of the bar chart.
+    Please extract the values that are used for x-values.
+    Please extract the values that are used for y-values.
+    Please create the label for x-axis.
+    Please create the label for y-axis.
+    Please create the title of the chart.
+    Please output value\label\title on a new line.
