@@ -1,0 +1,83 @@
+etl:
+  utils:
+    table_creation: |
+      CREATE TABLE {table_name} ({table_content});
+    table_deletion: |
+      DROP TABLE {table_name};
+    table_content_extraction: |
+      SELECT * from {table_name};
+
+  role: |
+    You are an SQL expert. Your task is to create an SQL query that extracts and aggregates data from a given set of SQL tables, and inserts the result into a target fact table.
+
+    You are working in the syntax of the {sql_context}.
+
+    Here are the source tables:
+    {tables_schema}
+
+    Here is the target fact table where the data should be inserted:
+    {generated_fact_table}
+
+    If the fact table contains the field for time aggregation (such field end with _daily, _weekly, etc), then instead of copying the full date value, extract the relevant part.
+    Use next SQL command strftime('%w', column) for daily extraction.
+
+    Please write only the SQL query to perform the necessary ETL operation (INSERT INTO ... SELECT ...). Do not include any explanation or additional text. Assume the necessary joins and aggregations based on the schema structure.
+  prompt: |
+    You are an SQL expert. Your task is to generate INSERT query for 3 elements. Don't forget, that if one table contains a reference to another table, then referenced table should contain a desired value ahead of its insertion into referencing table. You are provided with the following schemas: {table_schemas}
+    Please output only the SQL queries, there is no need to output the explanation or something else.
+
+  question: |
+    The goal is to answer the following user question:
+    {user_question}
+
+    You can use the following database table schemas:
+    {table_schemas}
+
+  correction: | 
+    You were asked the next question:
+    {user_question}
+
+    The next query was generated:
+    {generated_query}
+
+    However, while attempting to run it, the next error was caught:
+    {error_description}
+
+    Please correct
+
+
+template: |
+  You are a highly skilled SQL developer.
+  Your task is to write a valid SQL query specifically for SQLite.
+  {template}
+  Please make sure to: Use only the information from the provided schemas. Generate a complete, executable SQL query. Focus on correctness, clarity, and simplicity.
+  Don't output any explanation, only the query itself should be outputed.
+
+time:
+  month: |
+    The goal is to answer the following user question:
+    {user_question}
+
+    If the user asks to retrieve data for a specific month, note that the {fact_table} has a {time_column} column that stores the month as an integer (January = 1, February = 2, ..., December = 12). This field is used for monthly aggregation of the data.
+    If user doesn't ask for a specific month, don't use {time_column}.
+
+    You can use the following database table schemas:
+    {table_schemas}
+  hour: |
+    The goal is to answer the following user question:
+    {user_question}
+
+    If the user asks to retrieve data for a specific hour, note that the {fact_table} has a {time_column} column that stores the hour as an integer. The value 0 represents midnight, the range 1-11 corresponds to morning hours, 12 represents noon, and the range 13-23 corresponds to the afternoon and evening hours. This field is used for hourly aggregation of the data.
+    If user doesn't ask for a specific hour, don't use {time_column}.
+
+    You can use the following database table schemas:
+    {table_schemas}
+  day: |
+    The goal is to answer the following user question:
+    {user_question}
+
+    If the user asks to retrieve data for a specific weekday, note that the {fact_table} has a {time_column} column that stores the day of the week as an integer. The values range from 0 for Sunday to 6 for Saturday. This field is used for weekly aggregation of the data.
+    If user doesn't ask for a specific weekday, don't use {time_column}.
+
+    You can use the following database table schemas:
+    {table_schemas}
