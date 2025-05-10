@@ -12,6 +12,9 @@ from model import User, Chat, Message
 from db import db
 from socket_handler import sendToUser
 from threading import Thread
+import os
+
+from routes.utils.file_converter import convert_file_csv
 
 
 message_bp = Blueprint('message', __name__, url_prefix='/message')
@@ -67,12 +70,18 @@ def recieve_file():
 
     file = request.files['file']
     chat_id = request.form.get('chat_id')
+    extension = request.form.get('extension')
 
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
-    # file_path = f"./uploads/{file.filename}"
-    # file.save(file_path)
+    UPLOAD_FOLDER = './uploads'
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(file_path)
+
+    onlyFileName = file.filename.split(".")[0]
+    convert_file_csv(onlyFileName, file_path, extension)
 
     save_message(chat_id=chat_id, content=file.filename, file=True)
 
@@ -81,6 +90,10 @@ def recieve_file():
         'file' : True,
         'human' : True,
     }), 200
+
+
+
+
 
 
 @message_bp.route('/send/<int:chat_id>', methods=['POST'])

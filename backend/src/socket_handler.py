@@ -28,8 +28,6 @@ def get_receiver_socket_id(user_id):
 def sendToUser(userId, newMessage, id):
     socketId = get_receiver_socket_id(userId)
     if socketId:
-        print("foundSocket")
         socketio.emit("newMessage", {'content': newMessage, 'human': False, 'id': id, 'file': False}, room=socketId)
-        print("sentMessage")
     else:
         print(f"No socket ID found for user {userId}")

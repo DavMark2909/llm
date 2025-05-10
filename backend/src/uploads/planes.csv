@@ -1,0 +1,19 @@
+plane_number, plane_company, plane_model, flights_number, flight_hours
+1, 1, 'Boeing 747', 0, 1000.00
+2, 1, 'Boeing 777', 2, 2000.00
+3, 1, 'Boeing 777', 3, 500.00
+4, 2, 'TU-27', 2, 500.00
+5, 2, 'Airbus330', 1, 250.00
+6, 2, 'Airbus320', 4, 6000.00
+7, 3, 'Boeing 737', 2, 1000.00
+8, 3, 'Boeing 737', 2, 1000.00
+9, 3, 'Airbus330Neo', 2, 1000.00
+10, 4, 'Airbus330Neo', 4, 1000.00
+11, 4, 'SuperJet2', 2, 1000.00                         
+12, 5, 'SuperJet2', 3, 1000.00                            
+13, 5, 'Boeing787', 3, 1000.00
+14, 5, 'Boeing787', 2, 1000.00                             
+15, 5, 'Boeing787', 4, 9000.00                
+16, 6, 'Boeing787', 2, 2000.00
+17, 6, 'Airbas320', 5, 2000.00
+18, 6, 'Airbas330', 2, 2000.00
