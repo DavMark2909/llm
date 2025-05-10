@@ -14,7 +14,7 @@ from socket_handler import sendToUser
 from threading import Thread
 import os
 
-from routes.utils.file_converter import convert_file_csv
+from routes.utils.file_converter import convert_file_csv, convert_files
 
 
 message_bp = Blueprint('message', __name__, url_prefix='/message')
@@ -77,11 +77,9 @@ def recieve_file():
 
     UPLOAD_FOLDER = './uploads'
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
-
-    onlyFileName = file.filename.split(".")[0]
-    convert_file_csv(onlyFileName, file_path, extension)
 
     save_message(chat_id=chat_id, content=file.filename, file=True)
 
@@ -91,7 +89,12 @@ def recieve_file():
         'human' : True,
     }), 200
 
-
+@message_bp.route('/convert-files', methods=['GET'])
+@jwt_required
+def convert_files():
+    UPLOAD_FOLDER = './uploads'
+    full_path = os.path.abspath(UPLOAD_FOLDER)
+    convert_files(full_path)
 
 
 
