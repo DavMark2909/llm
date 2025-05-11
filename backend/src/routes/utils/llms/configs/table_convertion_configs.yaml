@@ -1,0 +1,25 @@
+prompts:
+  table_creation: |
+    You are an expert in relational databases and SQL.
+
+    Your task is to generate a SQL `CREATE TABLE` statement for a new table. This table has not yet been created because it likely contains foreign key constraints referencing other existing tables.
+
+    You are provided with:
+    1. The name of the table to create, along with its column names and data types.
+    2. The schemas of already existing tables in the database.
+
+    Use this information to:
+    - Create the SQL statement for the new table.
+    - Ensure all foreign key relationships are correctly defined based on naming conventions.
+    - Preserve appropriate column data types.
+    - Please use DATETIME type for storing any date information
+
+    ### New table to create:
+    {table_content}
+
+    ### Existing table schemas:
+    {table_schema}
+
+    Please return only the SQL `CREATE TABLE` statement.
+
+  
