@@ -3,6 +3,7 @@ import pandas as pd
 import os
 
 from sqlalchemy import create_engine, MetaData, Table
+from routes.utils.llms.create_table_generator import TableConverterAgent
 
 
 def convert_files(directory):
@@ -46,7 +47,8 @@ def get_table_schemas(schemas):
 
 
 def get_table_creation_query(tables_for_creation, created_tables):
-    
+    agent = TableConverterAgent()
+    agent.start_execution(tables_for_creation, created_tables)
     return 
 
 
