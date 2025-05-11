@@ -96,6 +96,12 @@ def convert_files():
     full_path = os.path.abspath(UPLOAD_FOLDER)
     convert_files(full_path)
 
+    return jsonify({
+        'content': "Your files have been succesfully uploaded and converted",
+        'file' : False,
+        'human' : False,
+    }), 200
+
 
 
 
