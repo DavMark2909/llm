@@ -14,7 +14,7 @@ from socket_handler import sendToUser
 from threading import Thread
 import os
 
-from routes.utils.file_converter import convert_file_csv, convert_files
+from routes.utils.file_converter import convert_files
 
 
 message_bp = Blueprint('message', __name__, url_prefix='/message')
@@ -90,17 +90,24 @@ def recieve_file():
     }), 200
 
 @message_bp.route('/convert-files', methods=['GET'])
-@jwt_required
-def convert_files():
+@jwt_required()
+def convert_files_endpoint():
     UPLOAD_FOLDER = './uploads'
     full_path = os.path.abspath(UPLOAD_FOLDER)
-    convert_files(full_path)
+    result = convert_files(full_path)
 
-    return jsonify({
-        'content': "Your files have been succesfully uploaded and converted",
-        'file' : False,
-        'human' : False,
-    }), 200
+    if result == "success":
+        return jsonify({
+            'content': "Your files have been succesfully uploaded and converted",
+            'file' : False,
+            'human' : False,
+        }), 200
+    else:
+        return jsonify({
+            'content': "The error occured while trying to upload your files. Please try later",
+            'file' : False,
+            'human' : False,
+        }), 500
 
 
 

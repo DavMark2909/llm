@@ -1,6 +1,7 @@
 import yaml
 import sqlite3
 import os
+import re
 
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
@@ -15,6 +16,7 @@ class TableConvertionState(TypedDict):
     schemas_of_tables: str
     model_response: str
     result_of_run: str
+    counter: int
     prompt: str
     llm: BaseLanguageModel 
 
@@ -27,7 +29,7 @@ class TableConverterAgent:
             raise EnvironmentError("OPENAI_API_KEY not found in environment variables.")
 
         self.llm = init_chat_model("gpt-4o-mini", model_provider="openai")
-        self.graph = create_graph(self.llm)
+        self.graph = create_graph()
                 
 
     def start_execution(self, tables_to_do, created_schemas):
@@ -51,9 +53,10 @@ class TableConverterAgent:
         tables_result = "\n".join(tables_result)
         schemas_result = "\n".join(schemas_result)
 
-        state = TableConvertionState(tables_to_create=tables_result, schemas_of_tables=schemas_result, llm=self.llm)
+        state = TableConvertionState(tables_to_create=tables_result, schemas_of_tables=schemas_result, llm=self.llm, counter=0)
 
         result_state = self.graph.invoke(state)
+        return result_state['result_of_run']
         
 
     
@@ -70,7 +73,8 @@ def create_graph():
         cond_logic,
             {
                 "finish": END,
-                "repeat": "query_running"
+                "repeat": "query_running",
+                "empty": "prompt_running"
             }  
     )
 
@@ -79,20 +83,24 @@ def create_graph():
     
 
 def prepare_prompt(state: TableConvertionState):
-    with open("configs/table_convertion_configs.yaml", "r") as f:
+    config_path = os.path.join(os.path.dirname(__file__), "configs", "table_convertion_configs.yaml")
+    with open(config_path, "r") as f:
         data = yaml.safe_load(f)
     prompt = data['prompts']['table_creation'].format(table_content=state["tables_to_create"], table_schema=state["schemas_of_tables"])
     state["prompt"] = prompt
+    print("Prompt is ", prompt)
     return state
     
 def run_prompt(state: TableConvertionState):
     prompt = state["prompt"]
     llm = state['llm']
     response = llm.invoke(prompt).content
-    print(response)
-    # the end of this code is hardcoded
-    response = "create table flights (flight_id int primary key, plane_number int, departure_place int, destination_place int, departure_time DATETIME, arrival_time DATETIME, FOREIGN KEY (plane_number) REFERENCES planes(plane_number), FOREIGN KEY (departure_place) REFERENCES place(place_id), FOREIGN KEY (destination_place) REFERENCES place(place_id))"
-    state['model_response'] = response
+    print("The model response ", response)
+    match = re.search(r"```sql\n(.*?)\n```", response, re.DOTALL)
+    if match:
+        state['model_response'] = match.group(1).strip()
+    else:
+        state['model_response'] = ""  
     return state
 
 def run_response(state: TableConvertionState):
@@ -104,14 +112,23 @@ def run_response(state: TableConvertionState):
         connection.commit()
         state['result_of_run'] = "success"
     except sqlite3.Error:
-        state['result_of_run'] = "error"
+        if query == "":
+            state['result_of_run'] = "empty"
+        else:
+            state['result_of_run'] = "error"
+        state['counter'] = state['counter'] + 1
     finally:
         connection.close()
     return state
 
 def cond_logic(state: TableConvertionState):
     result = state['result_of_run']
+    counter = state['counter']
+    if counter > 3:
+        return "finish"
     if result == "error":
         return "repeat"
+    elif result == "empty":
+        return "empty"
     else:
         return "finish"
