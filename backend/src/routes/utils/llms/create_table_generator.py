@@ -88,14 +88,12 @@ def prepare_prompt(state: TableConvertionState):
         data = yaml.safe_load(f)
     prompt = data['prompts']['table_creation'].format(table_content=state["tables_to_create"], table_schema=state["schemas_of_tables"])
     state["prompt"] = prompt
-    print("Prompt is ", prompt)
     return state
     
 def run_prompt(state: TableConvertionState):
     prompt = state["prompt"]
     llm = state['llm']
     response = llm.invoke(prompt).content
-    print("The model response ", response)
     match = re.search(r"```sql\n(.*?)\n```", response, re.DOTALL)
     if match:
         state['model_response'] = match.group(1).strip()

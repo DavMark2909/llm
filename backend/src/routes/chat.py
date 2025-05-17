@@ -15,6 +15,10 @@ from threading import Thread
 import os
 
 from routes.utils.file_converter import convert_files
+from routes.utils.schema_extractor import get_table_schemas
+from routes.utils.fact_table_starter import launch_fact_table_agent
+
+import json
 
 
 message_bp = Blueprint('message', __name__, url_prefix='/message')
@@ -109,12 +113,57 @@ def convert_files_endpoint():
             'human' : False,
         }), 500
 
+@message_bp.route('/generate-star-schema/<int:chat_id>', methods=['GET'])
+@jwt_required()
+def generate_star_schema(chat_id):
+    schema = get_table_schemas()
+    storage = f"Stored tables are: {list(schema.keys())}"
+    save_message(chat_id, storage, human=False)
+    return jsonify({
+        'content': schema,
+        'file' : False,
+        'human' : False,
+        'type': "star_schema_interactive"
+    }), 200
+
+@message_bp.route('/star-schema/<int:chat_id>', methods=['GET'])
+@jwt_required()
+def do_star_schema(chat_id):
+    agg_columns = request.args.getlist('agg_columns')
+    operations = request.args.get('operations')  # this may come as a stringified dict
+    time_column = request.args.get('time_column')
+    time = request.args.get('time')
+
+    print("Got the message")
+    print(agg_columns)
+    print(operations)
+    print(time_column)
+    print(time)
+
+    if operations:
+        operations = json.loads(operations)
+
+    result = launch_fact_table_agent(agg_columns, operations, time_column, time)
+
+    if result == "success":
+        return jsonify({
+            'content': "Fact table was succesfully generated",
+            'file' : False,
+            'human' : False,
+        }), 200
+    else:
+        return jsonify({
+            'content': "The error occured while trying to create fact table. Please repeat once again",
+            'file' : False,
+            'human' : False,
+        }), 500
 
 
 
 @message_bp.route('/send/<int:chat_id>', methods=['POST'])
 @jwt_required()
 def receive_message(chat_id):
+
     data = request.get_json()
     content = data.get('content')
     email = get_jwt_identity()
@@ -128,13 +177,21 @@ def receive_message(chat_id):
     thread = Thread(target=process_in_thread, args=(user.id, chat_id))
     thread.start()
 
-
     return jsonify({
         'content': content,
         'file' : False,
         'human' : True,
         'id': id
     }), 200
+
+    # return jsonify({
+    #     'id': 1000,
+    #     'content': get_table_schemas(),
+    #     'file' : False,
+    #     'human' : False,
+    #     'type': "star_schema_interactive"
+    # }), 200
+
 
 
 def save_message(chat_id, content, file=False, human=True):

@@ -1,0 +1,84 @@
+model:
+  prompts: 
+    role: |
+      You are an SQL expert.
+
+      Your task is to generate an SQL query to create a fact table in a star schema.
+
+      You are provided with the following tables' schemas:
+
+    tables: |
+      {tables}
+
+    operations: |
+      Include fields that compute the following operations: {operations}
+
+    time_aggregation: |
+      The fact table should also include time-based aggregation.
+      This aggregation should be done over the field {date_field}, and the {time} component should be extracted.
+      The generated field for this purpose should be of name {generated_time_name} and of type int.
+
+    user_prompt: |
+      Ensure that the fact table satisfies the following requirements:
+      {requirements}
+
+    remarks_one_aggregation: |
+      - The fact table must contain a primary key.
+      - Do not create a unique primary key that is not part of the provided table schemas.
+      - The primary key must not be auto-incremented.
+      - Ensure that the primary key is: {primary_key}.
+      - Foreign keys must reference the related dimension tables appropriately.
+      - The output must contain only the SQL query that creates the fact table.
+      - The fact table should not contain any math operations nor alias
+      - Do not repeat the prompt or provide any explanations.
+
+    remarks_multiple_aggregation: |
+      - The fact table must contain a primary key.
+      - Do not create a unique primary key that is not part of the provided table schemas.
+      - The primary key must not be auto-incremented.
+      - Ensure that the primary key is a composite key: ({key}).
+      - Foreign keys must reference the related dimension tables appropriately.
+      - The output must contain only the SQL query that creates the fact table.
+      - The fact table should not contain any math operations nor alias
+      - Do not repeat the prompt or provide any explanations.
+
+    checking_prompt: |
+      You are an SQL expert.
+      Given the user input: {user_prompt}, please identify whether the next generated fact table is correct and contains the required aggregations: {fact_table}.
+      Make sure that if fact table performs any time aggregations, then the dedicated field should be of type INT.
+      Make sure that the the output is only the fact table schema, wihtout any insert, select operations.
+      Feel free to make corections if needed and output the corrected output.
+      If no corrections are needed, please output the the query without modifications.
+
+    user_prompting: | 
+      You are a helpful assistant tasked with generating a natural language description of a fact table aggregation.
+
+      Given:
+      - `agg_columns`: An array of dimension columns to group by (e.g., ['company_id', 'departure_time']).
+      - `operations`: A dictionary mapping a column to an aggregation operation (e.g., { flight_id: 'COUNT' }).
+      - `time_column` (optional): A time-based column (e.g., 'departure_time').
+      - `time` (optional): A time granularity for the time column (e.g., 'WEEKDAY', 'MONTH').
+
+      Your job is to return a clear sentence describing the aggregation logic.
+
+      Examples:
+
+      Input:
+      agg_columns = ['company_id', 'departure_time']
+      operations = { flight_id: 'COUNT' }
+      time_column = 'departure_time'
+      time = 'WEEKDAY'
+
+      Output:
+      "Aggregation should count the number of flights operated by the desired company «company_id» within a particular weekday."
+
+      ---
+
+      Now generate the aggregation description for:
+
+      agg_columns = {agg_columns}
+      operations = {operations}
+      time_column = {time_column}
+      time = {time}
+
+

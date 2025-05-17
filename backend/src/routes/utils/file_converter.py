@@ -8,7 +8,7 @@ from .similarities import queue_maker
 
 
 def convert_files(directory):
-    table_map = {} #foreighhns
+    table_map = {} 
     table_path_map = {}
     table_foreign_kyes = {}
     for filename in os.listdir(directory):
@@ -18,7 +18,6 @@ def convert_files(directory):
     schemas = {}
     tables = get_table_names_init()
     queue = queue_maker(table_foreign_kyes, tables)
-    print("Generated queue - ", queue)
     while queue:
         a = queue.pop(0)
         print("Table to proceed: ", a)
@@ -44,6 +43,7 @@ def convert_file_csv(filename, file_path, table_map, table_foreign_kyes, table_p
         if existedBefore:
             delete_fact_table()
             run_etl_job()
+        os.remove(file_path)
     else:
         table_path_map[filename] = file_path
         table_map[filename] = df.iloc[0].to_dict()
@@ -53,6 +53,7 @@ def convert_generated_table(table_name, file_path):
     df = pd.read_csv(file_path)
     connection = sqlite3.connect("data.db")
     df.to_sql(table_name, connection, if_exists='append', index=False) 
+    os.remove(file_path)
 
 
 def get_table_schemas(schemas):
@@ -80,8 +81,6 @@ def get_table_names_init():
 
 
 def get_table_creation_query(tables_for_creation, created_tables):
-    print("tables_for_creation: ", tables_for_creation)
-    print("created_tables: ", created_tables)
     agent = TableConverterAgent()
     return agent.start_execution(tables_for_creation, created_tables)
     
