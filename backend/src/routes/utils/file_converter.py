@@ -51,6 +51,9 @@ def convert_file_csv(filename, file_path, table_map, table_foreign_kyes, table_p
 
 def convert_generated_table(table_name, file_path):
     df = pd.read_csv(file_path)
+    datetime_columns = [col for col in df.columns if 'time' in col.lower() or 'day' in col.lower()]
+    for col in datetime_columns:
+        df[col] = pd.to_datetime(df[col], errors='coerce')
     connection = sqlite3.connect("data.db")
     df.to_sql(table_name, connection, if_exists='append', index=False) 
     os.remove(file_path)

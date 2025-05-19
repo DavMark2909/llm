@@ -55,7 +55,7 @@ model:
 
       Given:
       - `agg_columns`: An array of dimension columns to group by (e.g., ['company_id', 'departure_time']).
-      - `operations`: A dictionary mapping a column to an aggregation operation (e.g., { flight_id: 'COUNT' }).
+      - `operations`: A dictionary mapping a column to an aggregation operation (e.g., {{ flight_id: 'COUNT' }}).
       - `time_column` (optional): A time-based column (e.g., 'departure_time').
       - `time` (optional): A time granularity for the time column (e.g., 'WEEKDAY', 'MONTH').
 
@@ -65,7 +65,7 @@ model:
 
       Input:
       agg_columns = ['company_id', 'departure_time']
-      operations = { flight_id: 'COUNT' }
+      operations =  {{flight_id: 'COUNT'}}
       time_column = 'departure_time'
       time = 'WEEKDAY'
 
@@ -80,5 +80,18 @@ model:
       operations = {operations}
       time_column = {time_column}
       time = {time}
+
+    etl: |
+      You are an SQL expert. Your task is to create an SQL query that extracts and aggregates data from a given set of SQL tables, and inserts the result into a target fact table.
+
+      You are working in the syntax of the {sql_context}.
+
+      Here are the source tables:
+      {tables_schema}
+
+      Here is the target fact table where the data should be inserted:
+      {generated_fact_table}
+
+      Please write only the SQL query to perform the necessary ETL operation (INSERT INTO ... SELECT ...). Do not include any explanation or additional text. Assume the necessary joins and aggregations based on the schema structure.
 
 
