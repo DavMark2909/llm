@@ -15,6 +15,7 @@ from threading import Thread
 import os
 
 from routes.utils.file_converter import convert_files
+from routes.utils.response_starter import parse_question
 from routes.utils.schema_extractor import get_table_schemas
 from routes.utils.fact_table_starter import launch_fact_table_agent
 
@@ -159,7 +160,6 @@ def do_star_schema(chat_id):
         }), 500
 
 
-
 @message_bp.route('/send/<int:chat_id>', methods=['POST'])
 @jwt_required()
 def receive_message(chat_id):
@@ -174,7 +174,7 @@ def receive_message(chat_id):
 
     id = save_message(chat_id=chat_id, content=content)
 
-    thread = Thread(target=process_in_thread, args=(user.id, chat_id))
+    thread = Thread(target=process_in_thread, args=(user.id, chat_id, content))
     thread.start()
 
     return jsonify({
@@ -183,14 +183,6 @@ def receive_message(chat_id):
         'human' : True,
         'id': id
     }), 200
-
-    # return jsonify({
-    #     'id': 1000,
-    #     'content': get_table_schemas(),
-    #     'file' : False,
-    #     'human' : False,
-    #     'type': "star_schema_interactive"
-    # }), 200
 
 
 
@@ -207,13 +199,17 @@ def save_message(chat_id, content, file=False, human=True):
 
     return new_message.id
 
-def processMessage(userId, chatId):
+def processMessage(userId, chatId, content):
     # some stuff here with langchain
-    dummyResponse = "Hello back from AI"
-    id = save_message(chat_id=chatId, content=dummyResponse, human=False)
-    sendToUser(userId, dummyResponse, id)
+    (response, type) = parse_question(content)
+    if type == "chart":
+        s = ', '.join(str(x) for x in response) 
+        id = save_message(chat_id=chatId, content=s, human=False)
+    else:
+        id = save_message(chat_id=chatId, content=response, human=False)
+    sendToUser(userId, response, type, id)
 
-def process_in_thread(user_id, chat_id):
-        from main import app
-        with app.app_context():
-            processMessage(user_id, chat_id)
+def process_in_thread(user_id, chat_id, content):
+    from main import app
+    with app.app_context():
+        processMessage(user_id, chat_id, content)

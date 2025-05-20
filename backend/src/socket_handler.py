@@ -25,9 +25,13 @@ def handle_disconnect():
 def get_receiver_socket_id(user_id):
     return user_socket_map.get(str(user_id), None)
 
-def sendToUser(userId, newMessage, id):
+def sendToUser(userId, newMessage, type, id):
     socketId = get_receiver_socket_id(userId)
     if socketId:
-        socketio.emit("newMessage", {'content': newMessage, 'human': False, 'id': id, 'file': False}, room=socketId)
+        if type != "chart":
+            socketio.emit("newMessage", {'content': newMessage, 'human': False, 'id': id, 'file': False, 'type': type}, room=socketId)
+        else: 
+            x_values, y_values, x_label, y_label, title = newMessage
+            socketio.emit("newMessage", {'human': False, 'id': id, 'file': False, 'type': type, 'x_values': x_values, 'y_values': y_values, 'x_label': x_label, 'y_label': y_label, 'title': title}, room=socketId)
     else:
         print(f"No socket ID found for user {userId}")
